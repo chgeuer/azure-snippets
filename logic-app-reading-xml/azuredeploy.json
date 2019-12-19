@@ -1,0 +1,101 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "logicAppName": { "type": "string", "defaultValue": "chgeuer123" }
+  },
+  "variables": {
+    "logicAppName": "[parameters('logicAppName')]",
+    "apiVersions": {
+      "MicrosoftLogicWorkflows": "2017-07-01"
+    }
+  },
+  "resources": [
+    {
+      "name": "[variables('logicAppName')]",
+      "tags": { "displayName": "Some Logic App"},
+      "type": "Microsoft.Logic/workflows",
+      "apiVersion": "[variables('apiVersions').MicrosoftLogicWorkflows]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "definition": {
+          "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "defaultItemIndex": {
+              "defaultValue": 0,
+              "type": "Int"
+            }
+          },
+          "triggers": {
+            "manual": {
+              "correlation": {},
+              "type": "Request",
+              "kind": "Http",
+              "inputs": {
+                "method": "POST",
+                "schema": {}
+              }
+            }
+          },
+          "actions": {
+            "Send_Response": {
+              "runAfter": {
+                "retrieveItemList": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Response",
+              "kind": "Http",
+              "inputs": {
+                "body": "@variables('itemList')",
+                "headers": {
+                  "X-DefaultItemIndex": "@{concat('', parameters('defaultItemIndex'))}",
+                  "X-FirstElem": "@{variables('itemList')[parameters('defaultItemIndex')]}",
+                  "X-MessageVersion": "@variables('messageVersion')"
+                },
+                "statusCode": 200
+              }
+            },
+            "retrieveItemList": {
+              "runAfter": {
+                "retrieveMessageVersion": [
+                  "Succeeded"
+                ]
+              },
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "itemList",
+                    "type": "array",
+                    "value": "@xpath(xml(triggerBody()),'/someData/item/text()')"
+                  }
+                ]
+              }
+            },
+            "retrieveMessageVersion": {
+              "runAfter": {},
+              "type": "InitializeVariable",
+              "inputs": {
+                "variables": [
+                  {
+                    "name": "messageVersion",
+                    "type": "string",
+                    "value": "@{int(xpath(xml(triggerBody()),'string(/someData/@version)'))}"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "triggerURI": {
+      "type": "string",
+      "value": "[listCallbackURL(concat(resourceId('Microsoft.Logic/workflows/', variables('logicAppName')), '/triggers/manual'), variables('apiVersions').MicrosoftLogicWorkflows).value]"
+    }
+  }
+}
