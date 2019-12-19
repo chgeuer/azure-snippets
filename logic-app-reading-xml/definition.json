@@ -1,48 +1,66 @@
 {
-  "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "defaultItemIndex": { "type": "Int",  "defaultValue": 0 }
-  },
-  "triggers": {
-    "manual": {
-      "type": "Request",
-      "kind": "Http", "correlation": {},
-      "inputs": { "method": "POST", "schema": {} }
-    }
-  },
-  "actions": {
-    "Send_Response": {
-      "runAfter": { "retrieveItemList": [ "Succeeded" ] },
-      "type": "Response",
-      "kind": "Http",
-      "inputs": {
-        "body": "@variables('itemList')",
-        "headers": {
-          "X-DefaultItemIndex": "@{concat('', parameters('defaultItemIndex'))}",
-          "X-FirstElem": "@{variables('itemList')[parameters('defaultItemIndex')]}",
-          "X-MessageVersion2": "@variables('messageVersion')"
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "defaultItemIndex": {
+            "defaultValue": 0,
+            "type": "Int"
+        }
+    },
+    "triggers": {
+        "manual": {
+            "correlation": {},
+            "inputs": {
+                "method": "POST",
+                "schema": {}
+            },
+            "kind": "Http",
+            "type": "Request"
+        }
+    },
+    "actions": {
+        "Send_Response": {
+            "kind": "Http",
+            "type": "Response",
+            "inputs": {
+                "body": "@variables('itemList')",
+                "headers": {
+                    "X-DefaultItemIndex": "@{concat('', parameters('defaultItemIndex'))}",
+                    "X-FirstElem": "@{variables('itemList')[parameters('defaultItemIndex')]}",
+                    "X-MessageVersion2": "@variables('messageVersion')"
+                },
+                "statusCode": 200
+            },
+            "runAfter": {
+                "retrieveItemList": [ "Succeeded" ],
+                "retrieveMessageVersion": [ "Succeeded" ]
+            }
         },
-        "statusCode": 200
-      }
-    },
-    "retrieveItemList": {
-      "type": "InitializeVariable",
-      "runAfter": { "retrieveMessageVersion": [ "Succeeded" ] },
-      "inputs": {
-        "variables": [
-          { "name": "itemList", "type": "Array", "value": "@xpath(xml(triggerBody()),'/someData/item/text()')" }
-        ]
-      }
-    },
-    "retrieveMessageVersion": {
-      "type": "InitializeVariable",
-      "runAfter": {},
-      "inputs": {
-        "variables": [
-          { "name": "messageVersion", "type": "String", "value": "@{int(xpath(xml(triggerBody()),'string(/someData/@version)'))}" }
-        ]
-      }
+        "retrieveItemList": {
+            "type": "InitializeVariable",
+            "inputs": {
+                "variables": [
+                    {
+                        "name": "itemList",
+                        "type": "Array",
+                        "value": "@xpath(xml(triggerBody()),'/someData/item/text()')"
+                    }
+                ]
+            },
+            "runAfter": {}
+        },
+        "retrieveMessageVersion": {
+            "type": "InitializeVariable",
+            "inputs": {
+                "variables": [
+                    {
+                        "name": "messageVersion",
+                        "type": "String",
+                        "value": "@{int(xpath(xml(triggerBody()),'string(/someData/@version)'))}"
+                    }
+                ]
+            },
+            "runAfter": {}
+        }
     }
-  }
 }

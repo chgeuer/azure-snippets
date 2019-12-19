@@ -1,10 +1,12 @@
 #!/bin/bash 
 
-subscription="chgeuer-work"
+subscriptionName="chgeuer-work"
+az account set --subscription "${subscriptionName}"
 resourceGroup="logicapptest"
-logicAppName="chgeuer1"
+logicAppName="chgeuer2"
+apiVersion="2017-07-01"
 
-az account set --subscription "${subscription}"
+subscriptionID="$( az account show --output json | jq -r ".id" )"
 
 az group create \
 	--name "${resourceGroup}" \
@@ -26,6 +28,8 @@ deploymentResult="$( az group deployment create \
 
 triggerURI="$( echo "${deploymentResult}" | jq -r ".properties.outputs.triggerURI.value" )"
 
+echo "Trigger: ${triggerURI}"
+
 # https://bagder.gitbook.io/everything-curl/usingcurl/usingcurl-verbose/usingcurl-writeout#available-write-out-variables
 
 response="$( cat payload.xml | curl \
@@ -42,11 +46,12 @@ firstElem="$( echo "$( cat header | grep "^X-FirstElem:" | sed -E 's/^(\S+?): (.
 body="$( cat ./body )"
 rm ./body ./header
 
-subscriptionID="724467b5-bee4-484b-bf13-d6a5505d2b51"
 versionId="08586248514880494834"
 triggerName="manual"
-apiVersion="2017-07-01"
 
+#
+# List workflows
+#
 az rest --method GET --output json --uri "https://management.azure.com/subscriptions/${subscriptionID}/resourceGroups/${resourceGroup}/providers/Microsoft.Logic/workflows?api-version=${apiVersion}"
 
 az rest --method GET \
