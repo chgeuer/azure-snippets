@@ -21,7 +21,7 @@
         "headers": {
           "X-DefaultItemIndex": "@{concat('', parameters('defaultItemIndex'))}",
           "X-FirstElem": "@{variables('itemList')[parameters('defaultItemIndex')]}",
-          "X-MessageVersion": "@variables('messageVersion')"
+          "X-MessageVersion2": "@variables('messageVersion')"
         },
         "statusCode": 200
       }

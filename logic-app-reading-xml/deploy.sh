@@ -2,7 +2,7 @@
 
 subscription="chgeuer-work"
 resourceGroup="logicapptest"
-logicAppName="foo1aaaxx2"
+logicAppName="chgeuer1"
 
 az account set --subscription "${subscription}"
 
@@ -20,9 +20,9 @@ deploymentResult="$( az group deployment create \
 	--resource-group "${resourceGroup}" \
 	--mode Incremental \
 	--template-file azuredeploy-minimal.json \
-	--parameters \
-		logicAppName="${logicAppName}" \
-		logicAppDefinition="@./definition.json" )"
+	--parameters logicAppName="${logicAppName}" \
+	--parameters logicAppDefinition="@./definition.json" 
+	)"
 
 triggerURI="$( echo "${deploymentResult}" | jq -r ".properties.outputs.triggerURI.value" )"
 
@@ -41,3 +41,35 @@ defaultItemIndex="$( echo "$( cat header | grep "^X-DefaultItemIndex:" | sed -E 
 firstElem="$( echo "$( cat header | grep "^X-FirstElem:" | sed -E 's/^(\S+?): (.+)/\2/' )" )"
 body="$( cat ./body )"
 rm ./body ./header
+
+subscriptionID="724467b5-bee4-484b-bf13-d6a5505d2b51"
+versionId="08586248514880494834"
+triggerName="manual"
+apiVersion="2017-07-01"
+
+az rest --method GET --output json --uri "https://management.azure.com/subscriptions/${subscriptionID}/resourceGroups/${resourceGroup}/providers/Microsoft.Logic/workflows?api-version=${apiVersion}"
+
+az rest --method GET \
+  --uri "https://management.azure.com/subscriptions/${subscriptionID}/resourceGroups/${resourceGroup}/providers/Microsoft.Logic/workflows/${logicAppName}/versions?api-version=${apiVersion}" \
+  --query "value[].{Created:properties.createdTime,Name:name}" --output table
+
+#
+# https://docs.microsoft.com/en-us/rest/api/logic/
+#
+az rest --method GET --output json --uri "https://management.azure.com/subscriptions/${subscriptionID}/resourceGroups/${resourceGroup}/providers/Microsoft.Logic/workflows/${logicAppName}/versions/${versionId}?api-version=${apiVersion}"
+
+#
+# Re-fetch triggerURI
+#
+triggerURI="$(
+  az rest --method POST --output json \
+    --uri "https://management.azure.com/subscriptions/${subscriptionID}/resourceGroups/${resourceGroup}/providers/Microsoft.Logic/workflows/${logicAppName}/versions/${versionId}/triggers/${triggerName}/listCallbackUrl?api-version=${apiVersion}" \
+    | jq -r ".value"
+  )"
+
+#
+# List runs
+#
+az rest --method GET --output json \
+    --uri "https://management.azure.com/subscriptions/${subscriptionID}/resourceGroups/${resourceGroup}/providers/Microsoft.Logic/workflows/${logicAppName}/runs?api-version=${apiVersion}" \
+    | jq "."
