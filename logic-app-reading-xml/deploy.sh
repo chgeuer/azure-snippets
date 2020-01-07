@@ -33,7 +33,7 @@ echo "Trigger: ${triggerURI}"
 # https://bagder.gitbook.io/everything-curl/usingcurl/usingcurl-verbose/usingcurl-writeout#available-write-out-variables
 
 response="$( cat payload.xml | curl \
-	--silent --include \
+    --silent --include \
 	--request POST \
 	--url "${triggerURI}" \
 	--header "Content-Type: application/xml" \
