@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "logicAppName": { "type": "string", "defaultValue": "chgeuer123" },
-    "logicAppDefinition": { "type": "object" }
+    "logicAppDefinition": { "type": "string" }
   },
   "variables": {
     "logicAppName": "[parameters('logicAppName')]",
@@ -17,7 +17,7 @@
       "type": "Microsoft.Logic/workflows",
       "apiVersion": "[variables('apiVersions').MicrosoftLogicWorkflows]",
       "location": "[resourceGroup().location]",
-      "properties": { "definition": "[parameters('logicAppDefinition')]" }
+      "properties": { "definition": "[json(parameters('logicAppDefinition'))]" }
     }
   ],
   "outputs": {
