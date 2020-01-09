@@ -8,13 +8,11 @@ resource "azurerm_resource_group" "production" {
 }
 
 module "logic_app" {
-  source               = "./modules/logicapp"
-  deployment_name      = var.deployment_name
+  # source             = "./modules/logicapp"
+  source               = "github.com/chgeuer/azure-snippets//logic-app-reading-xml/modules/logicapp?ref=19eccf405dcdca0a1c8bd5b8a6b1af1039469414"
+
   resource_group_name  = azurerm_resource_group.production.name
+  deployment_name      = var.deployment_name
   logic_app_name       = var.logic_app_name
   logic_app_definition = file(var.workflow_definition_file)
-}
-
-output "trigger_uri" {
-  value = module.logic_app.trigger_uri
 }
