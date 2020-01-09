@@ -2,18 +2,17 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "logicAppName": { "type": "string", "defaultValue": "chgeuer123" },
+    "logicAppName": { "type": "string" },
     "logicAppDefinition": { "type": "string" }
   },
   "variables": {
-    "logicAppName": "[parameters('logicAppName')]",
     "apiVersions": {
       "MicrosoftLogicWorkflows": "2017-07-01"
     }
   },
   "resources": [
     {
-      "name": "[variables('logicAppName')]",
+      "name": "[parameters('logicAppName')]",
       "type": "Microsoft.Logic/workflows",
       "apiVersion": "[variables('apiVersions').MicrosoftLogicWorkflows]",
       "location": "[resourceGroup().location]",
@@ -23,7 +22,7 @@
   "outputs": {
     "triggerURI": {
       "type": "string",
-      "value": "[listCallbackURL(concat(resourceId('Microsoft.Logic/workflows/', variables('logicAppName')), '/triggers/manual'), variables('apiVersions').MicrosoftLogicWorkflows).value]"
+      "value": "[listCallbackURL(concat(resourceId('Microsoft.Logic/workflows/', parameters('logicAppName')), '/triggers/manual'), variables('apiVersions').MicrosoftLogicWorkflows).value]"
     }
   }
 }

@@ -3,6 +3,6 @@ terraform {
     resource_group_name  = "longterm"
     storage_account_name = "chgeuer"
     container_name       = "terraformstate"
-    key                  = "demo1.tfstate"
+    key                  = "demo2.tfstate"
   }
 }
