@@ -3,7 +3,7 @@ locals {
 }
 
 resource "azurerm_template_deployment" "logicapp" {
-  name                = var.deployment_name
+  name                = "deployment-${formatdate("YYYY-MM-DD--hh-mm-ss", timestamp())}"
   resource_group_name = var.resource_group_name
   deployment_mode     = "Incremental"
   template_body       = file(local.arm_template_file)
@@ -12,4 +12,3 @@ resource "azurerm_template_deployment" "logicapp" {
     "logicAppDefinition" = var.logic_app_definition
   }
 }
-

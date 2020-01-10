@@ -12,10 +12,3 @@ variable "logic_app_definition" {
   description = "The JSON string of the Azure Logic App definition"
   type        = string
 }
-
-variable "deployment_name" {
-  default     = "logicappdeployment"
-  description = "The deployment name"
-  type        = string
-}
-
